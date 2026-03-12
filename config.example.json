@@ -1,0 +1,7 @@
+{
+  "endpoints": {
+    "/webhooks": "whsec_your_main_endpoint_secret",
+    "/webhooks/company_a": "whsec_company_a_secret",
+    "/webhooks/company_b": "whsec_company_b_secret"
+  }
+}
