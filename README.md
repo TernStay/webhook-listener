@@ -64,7 +64,11 @@ export WEBHOOK_SECRET=whsec_your_secret_here
 uvicorn listener:app --port 9000 --reload
 ```
 
-**Precedence:** If both config file and env var are set, the config file takes precedence for paths that have an entry. The env var acts as a fallback for paths not listed in config.
+**Precedence:** For each request path, the listener looks up the secret in this order:
+1. `config.json` — if the path has an entry in `endpoints`
+2. `WEBHOOK_SECRET` from `.env` or env var — fallback when `config.json` doesn't exist or doesn't have that path
+
+**Note:** `config.json` does not exist by default—only `config.example.json` (a template) is in the repo. If you haven't created `config.json`, the listener uses `.env` / `WEBHOOK_SECRET` for all paths. That's why you may see "valid" signatures with only a `.env` file.
 
 ## Endpoints
 
@@ -114,6 +118,16 @@ When a secret is configured for the request path, the listener verifies the `Tur
 - **INVALID** — signature mismatch (wrong secret or tampered payload)
 - **unverified** — no secret configured for this path
 
+## Test Script
+
+Run an end-to-end test (register endpoint, subscribe, trigger event, verify isolation):
+
+```bash
+./test-webhook-flow.sh
+```
+
+Requires the webhook-service (port 8000) and this listener (port 9000) to be running. The script prints the endpoint secret—add it to `config.json` or `.env` for signature verification.
+
 ## Running with start-local.sh
 
 The parent project's `start-local.sh` starts the listener along with other services. Ensure `config.json` or `.env` is set up before running:
@@ -140,4 +154,4 @@ The listener runs on port 9000. The webhook-service will deliver to whatever end
 
 - Ensure the webhook-service is running and the endpoint URL is registered.
 - Check that the endpoint is subscribed to the event types you're triggering.
-- Use `./test-webhook-flow.sh` from the project root to run a quick end-to-end test.
+- Run `./test-webhook-flow.sh` to run a quick end-to-end test.
