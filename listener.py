@@ -228,7 +228,16 @@ def _format_event_summary(record: dict, index: int) -> str:
 
 @app.get("/events")
 async def list_events(request: Request):
-    events = received_events[-50:]
+    # ?limit=0 returns everything (useful for e2e tests that need exact counts).
+    # Default cap is 50 so the interactive text view stays short.
+    try:
+        limit = int(request.query_params.get("limit", "50"))
+    except ValueError:
+        limit = 50
+    if limit <= 0:
+        events = list(received_events)
+    else:
+        events = received_events[-limit:]
     # Default to human-readable text; use ?format=json for raw JSON
     if request.query_params.get("format") != "json":
         lines = [
